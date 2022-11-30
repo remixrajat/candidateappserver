@@ -24,7 +24,9 @@ const addCandidate = async (req, res) => {
 const getAllCandidates = async (req, res) => {
   try {
     // console.log(req.body);
-    const finalData = await Candidates.find().skip(0).limit(2);
+    const finalData = await Candidates.find()
+      .skip(Number(req.query.skip))
+      .limit(Number(req.query.limit));
     // console.log(finalData);
     res.status(200).json(finalData);
   } catch (err) {
@@ -38,13 +40,17 @@ const getFilteredCandidates = async (req, res) => {
     const obj = {};
     for (let key in req.body) {
       if (req.body[key] && req.body[key].length > 0) {
-        obj[key] = req.body[key];
+        if (Array.isArray(req.body[key])) obj[key] = { $in: req.body[key] };
+        else obj[key] = { $regex: req.body[key] };
+        // { $regex: /Ghost/, $options: 'i' }
       }
     }
 
-    console.log(obj);
+    // console.log(obj);
 
-    const finalData = await Candidates.find(obj).skip(0).limit(2);
+    const finalData = await Candidates.find(obj)
+      .skip(Number(req.query.skip))
+      .limit(Number(req.query.limit));
     // console.log(finalData);
     res.status(200).json(finalData);
   } catch (err) {
